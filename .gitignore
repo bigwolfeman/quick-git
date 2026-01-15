@@ -1,0 +1,58 @@
+# Quick-Git Noctalia Plugin - .gitignore
+
+# QML/Qt build artifacts
+*.qmlc
+*.qmc
+build/
+qmldir.cache
+.qml-cache/
+
+# User-specific settings (auto-generated)
+settings.json
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.cproject
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+.directory
+
+# Debug logs
+*.log
+qml-debug/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Node.js (if any tooling)
+node_modules/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Preview/screenshots (keep preview.png for registry)
+*.png
+!preview.png
+!Assets/icons/*.png
+
+# Generated documentation
+*.html.gen
+
+# Backup files
+*.bak
+*.orig
+
+# Test artifacts
+test-output/
+coverage/

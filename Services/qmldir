@@ -1,0 +1,4 @@
+module Services
+singleton SettingsService 1.0 SettingsService.qml
+singleton GitService 1.0 GitService.qml
+singleton GitHubService 1.0 GitHubService.qml

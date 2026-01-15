@@ -1,0 +1,931 @@
+/**
+ * GitService.qml - Git Operations Singleton Service
+ *
+ * Manages local git repository state and operations via Quickshell.Io.Process.
+ * Exposes reactive properties for UI binding throughout the plugin.
+ *
+ * Tasks Implemented:
+ * - T007: Singleton skeleton with reactive properties
+ * - T008: setRepository(path) with .git/ validation
+ * - T009: refresh() using git status --porcelain
+ * - T010: Branch detection using git rev-parse --abbrev-ref HEAD
+ * - T011: Ahead/behind count using git rev-list --left-right --count
+ *
+ * @see specs/001-quick-git-plugin/contracts/git-service.md
+ */
+pragma Singleton
+import Quickshell
+import Quickshell.Io
+import QtQuick
+
+Singleton {
+    id: gitService
+
+    // =========================================================================
+    // REACTIVE PROPERTIES (T007)
+    // =========================================================================
+
+    /** Current repository absolute path */
+    property string repoPath: ""
+
+    /** Current branch name (empty if detached HEAD or not a repo) */
+    property string branch: ""
+
+    /** Whether repoPath points to a valid git repository */
+    property bool isRepo: false
+
+    /** Current repository status object */
+    property var status: createEmptyStatus()
+
+    /** True while any git command is in progress */
+    property bool isRefreshing: false
+
+    /** Timestamp of last successful refresh (ms since epoch) */
+    property real lastRefresh: 0
+
+    /** Last error message, empty string if no error */
+    property string error: ""
+
+    // =========================================================================
+    // CONVENIENCE PROPERTIES (derived from status)
+    // =========================================================================
+
+    /** True if there are any uncommitted changes */
+    readonly property bool hasChanges: !status.isClean
+
+    /** Number of staged files */
+    readonly property int stagedCount: status.staged.length
+
+    /** Number of unstaged modified files */
+    readonly property int unstagedCount: status.unstaged.length
+
+    /** Number of untracked files */
+    readonly property int untrackedCount: status.untracked.length
+
+    /** Commits ahead of upstream */
+    readonly property int aheadCount: status.ahead
+
+    /** Commits behind upstream */
+    readonly property int behindCount: status.behind
+
+    /** True if there are merge conflicts */
+    readonly property bool hasConflicts: status.hasConflicts
+
+    /** True if repository has no commits yet (T090) */
+    property bool hasNoCommits: false
+
+    // =========================================================================
+    // SIGNALS
+    // =========================================================================
+
+    /** Emitted when repository status has been updated */
+    signal statusChanged()
+
+    /** Emitted when branch changes (checkout, create, etc) */
+    signal branchChanged(string newBranch)
+
+    /** Emitted when a commit is successfully created */
+    signal commitCreated(string sha)
+
+    /** Emitted when any git operation fails */
+    signal errorOccurred(string message)
+
+    // =========================================================================
+    // PRIVATE STATE
+    // =========================================================================
+
+    // Track which commands are running for refresh coordination
+    property bool _branchPending: false
+    property bool _statusPending: false
+    property bool _aheadBehindPending: false
+
+    // Temporary storage during status parsing
+    property var _tempStaged: []
+    property var _tempUnstaged: []
+    property var _tempUntracked: []
+    property bool _tempHasConflicts: false
+
+    // =========================================================================
+    // PUBLIC METHODS
+    // =========================================================================
+
+    /**
+     * Set the active repository path and validate it (T008)
+     *
+     * Validates that the path contains a .git/ directory before switching.
+     * Triggers refresh() on successful validation.
+     *
+     * @param path - Absolute path to repository root
+     * @returns boolean - true if validation started (actual result comes async)
+     */
+    function setRepository(path) {
+        if (!path) {
+            console.warn("[GitService] setRepository called with empty path")
+            return false
+        }
+
+        // Normalize path (remove trailing slash)
+        path = path.replace(/\/+$/, "")
+
+        if (path === repoPath) {
+            console.log("[GitService] Already at repository:", path)
+            return true
+        }
+
+        console.log("[GitService] Setting repository path:", path)
+
+        // Clear current state while validating new path
+        repoPath = path
+        branch = ""
+        isRepo = false
+        status = createEmptyStatus()
+        error = ""
+
+        // Start validation process
+        repoValidateProcess.command = ["git", "-C", path, "rev-parse", "--git-dir"]
+        repoValidateProcess.running = true
+
+        return true
+    }
+
+    /**
+     * Refresh repository status from git (T009, T010, T011)
+     *
+     * Executes git commands to update:
+     * - Current branch (T010)
+     * - File status: staged, unstaged, untracked (T009)
+     * - Ahead/behind counts relative to upstream (T011)
+     *
+     * Results are delivered asynchronously via property updates and signals.
+     */
+    function refresh() {
+        if (isRefreshing) {
+            console.log("[GitService] Refresh already in progress, skipping")
+            return
+        }
+
+        if (!repoPath) {
+            console.log("[GitService] No repository path set, skipping refresh")
+            return
+        }
+
+        if (!isRepo) {
+            console.log("[GitService] Not a valid repository, skipping refresh")
+            return
+        }
+
+        console.log("[GitService] Starting refresh for:", repoPath)
+        isRefreshing = true
+        error = ""
+
+        // Reset temporary state
+        _tempStaged = []
+        _tempUnstaged = []
+        _tempUntracked = []
+        _tempHasConflicts = false
+
+        // Mark all commands as pending
+        _branchPending = true
+        _statusPending = true
+        _aheadBehindPending = true
+
+        // Start all commands in parallel
+        branchProcess.command = ["git", "-C", repoPath, "rev-parse", "--abbrev-ref", "HEAD"]
+        branchProcess.running = true
+
+        statusProcess.command = ["git", "-C", repoPath, "status", "--porcelain"]
+        statusProcess.running = true
+
+        aheadBehindProcess.command = ["git", "-C", repoPath, "rev-list", "--left-right", "--count", "HEAD...@{u}"]
+        aheadBehindProcess.running = true
+    }
+
+    /**
+     * Stage a file for commit
+     *
+     * @param filePath - Path relative to repository root
+     * @returns boolean - true if command started
+     */
+    function stage(filePath) {
+        if (!isRepo || !filePath) {
+            console.warn("[GitService] Cannot stage: not a repo or empty path")
+            return false
+        }
+
+        console.log("[GitService] Staging file:", filePath)
+        stageProcess.command = ["git", "-C", repoPath, "add", "--", filePath]
+        stageProcess.running = true
+        return true
+    }
+
+    /**
+     * Unstage a file (remove from staging area)
+     *
+     * @param filePath - Path relative to repository root
+     * @returns boolean - true if command started
+     */
+    function unstage(filePath) {
+        if (!isRepo || !filePath) {
+            console.warn("[GitService] Cannot unstage: not a repo or empty path")
+            return false
+        }
+
+        console.log("[GitService] Unstaging file:", filePath)
+        unstageProcess.command = ["git", "-C", repoPath, "reset", "HEAD", "--", filePath]
+        unstageProcess.running = true
+        return true
+    }
+
+    /**
+     * Stage all changes (including untracked files)
+     *
+     * @returns boolean - true if command started
+     */
+    function stageAll() {
+        if (!isRepo) {
+            console.warn("[GitService] Cannot stage all: not a repo")
+            return false
+        }
+
+        console.log("[GitService] Staging all files")
+        stageAllProcess.command = ["git", "-C", repoPath, "add", "-A"]
+        stageAllProcess.running = true
+        return true
+    }
+
+    /**
+     * Create a commit with staged changes
+     *
+     * @param message - Commit message (must be non-empty)
+     * @returns boolean - true if command started
+     */
+    function commit(message) {
+        if (!isRepo) {
+            console.warn("[GitService] Cannot commit: not a repo")
+            return false
+        }
+
+        if (!message || message.trim().length === 0) {
+            error = "Commit message required"
+            errorOccurred(error)
+            return false
+        }
+
+        if (stagedCount === 0) {
+            error = "No files staged for commit"
+            errorOccurred(error)
+            return false
+        }
+
+        console.log("[GitService] Creating commit:", message.substring(0, 50) + "...")
+        commitProcess.command = ["git", "-C", repoPath, "commit", "-m", message]
+        commitProcess.running = true
+        return true
+    }
+
+    /**
+     * Push commits to remote
+     *
+     * @returns boolean - true if command started
+     */
+    function push() {
+        if (!isRepo) {
+            console.warn("[GitService] Cannot push: not a repo")
+            return false
+        }
+
+        console.log("[GitService] Pushing to remote")
+        pushProcess.command = ["git", "-C", repoPath, "push"]
+        pushProcess.running = true
+        return true
+    }
+
+    /**
+     * Get diff for a specific file
+     *
+     * @param filePath - Path relative to repository root
+     * @param staged - If true, get staged diff (--cached), otherwise working tree diff
+     * @returns boolean - true if command started (result via diffReady signal or callback)
+     */
+    function getDiff(filePath, staged) {
+        if (!isRepo || !filePath) {
+            console.warn("[GitService] Cannot get diff: not a repo or empty path")
+            return false
+        }
+
+        if (staged) {
+            diffProcess.command = ["git", "-C", repoPath, "diff", "--cached", "--", filePath]
+        } else {
+            diffProcess.command = ["git", "-C", repoPath, "diff", "--", filePath]
+        }
+
+        diffProcess._filePath = filePath
+        diffProcess._staged = staged
+        diffProcess.running = true
+        return true
+    }
+
+    // Signal for diff results
+    signal diffReady(string filePath, bool staged, string diffText)
+
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+
+    /**
+     * Create an empty status object with default values
+     */
+    function createEmptyStatus() {
+        return {
+            staged: [],
+            unstaged: [],
+            untracked: [],
+            ahead: 0,
+            behind: 0,
+            hasConflicts: false,
+            isClean: true
+        }
+    }
+
+    /**
+     * Check if all refresh commands have completed and finalize
+     */
+    function _checkRefreshComplete() {
+        if (_branchPending || _statusPending || _aheadBehindPending) {
+            return // Still waiting for commands
+        }
+
+        // All commands complete - update status object
+        const newStatus = {
+            staged: _tempStaged.slice(), // Copy arrays
+            unstaged: _tempUnstaged.slice(),
+            untracked: _tempUntracked.slice(),
+            ahead: status.ahead, // Keep current values (updated by aheadBehind)
+            behind: status.behind,
+            hasConflicts: _tempHasConflicts,
+            isClean: _tempStaged.length === 0 &&
+                     _tempUnstaged.length === 0 &&
+                     _tempUntracked.length === 0
+        }
+
+        status = newStatus
+        lastRefresh = Date.now()
+        isRefreshing = false
+
+        console.log("[GitService] Refresh complete - staged:", stagedCount,
+                    "unstaged:", unstagedCount, "untracked:", untrackedCount,
+                    "ahead:", aheadCount, "behind:", behindCount)
+
+        statusChanged()
+    }
+
+    /**
+     * Parse git status --porcelain line (T009)
+     *
+     * Format: XY PATH
+     * - X: Index/staging area status
+     * - Y: Working tree status
+     * - PATH: File path (starts at position 3)
+     *
+     * Status codes:
+     *   ' ' = unmodified
+     *   M = modified
+     *   A = added
+     *   D = deleted
+     *   R = renamed
+     *   C = copied
+     *   U = updated but unmerged
+     *   ? = untracked
+     *   ! = ignored
+     */
+    function _parseStatusLine(line) {
+        if (!line || line.length < 3) return
+
+        const indexStatus = line.charAt(0)
+        const workTreeStatus = line.charAt(1)
+        let filePath = line.substring(3)
+
+        // Handle renamed files: "R  old -> new"
+        if (filePath.includes(" -> ")) {
+            filePath = filePath.split(" -> ")[1]
+        }
+
+        // Check for merge conflicts (UU, AA, DD, AU, UA, DU, UD)
+        const conflictCodes = ["UU", "AA", "DD", "AU", "UA", "DU", "UD"]
+        const statusCode = indexStatus + workTreeStatus
+        if (conflictCodes.includes(statusCode)) {
+            _tempHasConflicts = true
+            // Conflicts appear in both staged and unstaged
+            _tempStaged.push({
+                status: indexStatus,
+                statusLabel: _getStatusLabel(indexStatus),
+                path: filePath,
+                isConflict: true
+            })
+            _tempUnstaged.push({
+                status: workTreeStatus,
+                statusLabel: _getStatusLabel(workTreeStatus),
+                path: filePath,
+                isConflict: true
+            })
+            return
+        }
+
+        // Untracked files: ??
+        if (indexStatus === '?' && workTreeStatus === '?') {
+            _tempUntracked.push({
+                status: '?',
+                statusLabel: 'Untracked',
+                path: filePath
+            })
+            return
+        }
+
+        // Ignored files: !! (skip)
+        if (indexStatus === '!' && workTreeStatus === '!') {
+            return
+        }
+
+        // Staged changes (index has modification)
+        if (indexStatus !== ' ' && indexStatus !== '?') {
+            _tempStaged.push({
+                status: indexStatus,
+                statusLabel: _getStatusLabel(indexStatus),
+                path: filePath
+            })
+        }
+
+        // Unstaged changes (working tree has modification)
+        if (workTreeStatus !== ' ' && workTreeStatus !== '?') {
+            _tempUnstaged.push({
+                status: workTreeStatus,
+                statusLabel: _getStatusLabel(workTreeStatus),
+                path: filePath
+            })
+        }
+    }
+
+    /**
+     * Get human-readable label for status code
+     */
+    function _getStatusLabel(code) {
+        switch (code) {
+            case 'M': return 'Modified'
+            case 'A': return 'Added'
+            case 'D': return 'Deleted'
+            case 'R': return 'Renamed'
+            case 'C': return 'Copied'
+            case 'U': return 'Unmerged'
+            case '?': return 'Untracked'
+            case '!': return 'Ignored'
+            default: return 'Unknown'
+        }
+    }
+
+    /**
+     * Handle error from git command
+     */
+    function _handleError(message, stderrText) {
+        const fullMessage = stderrText ? `${message}: ${stderrText.trim()}` : message
+        console.error("[GitService]", fullMessage)
+        error = fullMessage
+        errorOccurred(fullMessage)
+    }
+
+    // =========================================================================
+    // GIT PROCESSES
+    // =========================================================================
+
+    /**
+     * Process: Validate repository path (T008)
+     * Checks if path contains a valid .git directory
+     */
+    Process {
+        id: repoValidateProcess
+        running: false
+
+        property string stderrText: ""
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                repoValidateProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                console.log("[GitService] Valid git repository:", repoPath)
+                isRepo = true
+                error = ""
+                // Trigger initial refresh
+                refresh()
+            } else {
+                console.log("[GitService] Not a git repository:", repoPath)
+                isRepo = false
+                branch = ""
+                status = createEmptyStatus()
+                error = "Not a git repository"
+                errorOccurred(error)
+            }
+            stderrText = ""
+        }
+    }
+
+    /**
+     * Process: Get current branch name (T010)
+     * Uses: git rev-parse --abbrev-ref HEAD
+     */
+    Process {
+        id: branchProcess
+        running: false
+
+        property string stderrText: ""
+
+        stdout: StdioCollector {
+            onCollected: text => {
+                const newBranch = text.trim()
+
+                // Handle detached HEAD state
+                if (newBranch === "HEAD") {
+                    // Get short SHA instead
+                    detachedHeadProcess.command = ["git", "-C", repoPath, "rev-parse", "--short", "HEAD"]
+                    detachedHeadProcess.running = true
+                    return
+                }
+
+                if (newBranch !== branch) {
+                    const oldBranch = branch
+                    branch = newBranch
+                    console.log("[GitService] Branch:", branch)
+                    if (oldBranch !== "") {
+                        branchChanged(newBranch)
+                    }
+                }
+            }
+        }
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                branchProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            _branchPending = false
+
+            if (exitCode !== 0) {
+                // T090: Check if this is an empty repository (no commits yet)
+                if (stderrText.includes("ambiguous argument 'HEAD'") ||
+                    stderrText.includes("fatal: not a valid object name") ||
+                    stderrText.includes("unknown revision")) {
+                    console.log("[GitService] Empty repository detected (no commits yet)")
+                    hasNoCommits = true
+                    branch = ""
+                } else {
+                    console.warn("[GitService] Failed to get branch, exit code:", exitCode)
+                    hasNoCommits = false
+                    branch = ""
+                }
+            } else {
+                // Successfully got branch, so repo has commits
+                hasNoCommits = false
+            }
+
+            stderrText = ""
+            _checkRefreshComplete()
+        }
+    }
+
+    /**
+     * Process: Get short SHA for detached HEAD state
+     */
+    Process {
+        id: detachedHeadProcess
+        running: false
+
+        stdout: StdioCollector {
+            onCollected: text => {
+                const shortSha = text.trim()
+                const newBranch = "(" + shortSha + ")"
+
+                if (newBranch !== branch) {
+                    branch = newBranch
+                    console.log("[GitService] Detached HEAD at:", shortSha)
+                }
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0) {
+                branch = "(detached)"
+            }
+        }
+    }
+
+    /**
+     * Process: Get repository status (T009)
+     * Uses: git status --porcelain
+     * Parses output line by line via SplitParser
+     */
+    Process {
+        id: statusProcess
+        running: false
+
+        property string stderrText: ""
+
+        stdout: SplitParser {
+            onRead: line => {
+                _parseStatusLine(line)
+            }
+        }
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                statusProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            _statusPending = false
+
+            if (exitCode !== 0) {
+                _handleError("Failed to get git status", stderrText)
+            }
+
+            stderrText = ""
+            _checkRefreshComplete()
+        }
+    }
+
+    /**
+     * Process: Get ahead/behind count (T011)
+     * Uses: git rev-list --left-right --count HEAD...@{u}
+     * Output format: "ahead\tbehind" (tab-separated)
+     */
+    Process {
+        id: aheadBehindProcess
+        running: false
+
+        property string stderrText: ""
+
+        stdout: StdioCollector {
+            onCollected: text => {
+                const trimmed = text.trim()
+                if (!trimmed) return
+
+                // Parse "ahead\tbehind" format
+                const parts = trimmed.split(/\s+/)
+                if (parts.length >= 2) {
+                    const ahead = parseInt(parts[0], 10) || 0
+                    const behind = parseInt(parts[1], 10) || 0
+
+                    // Update status object with new values
+                    status = {
+                        staged: status.staged,
+                        unstaged: status.unstaged,
+                        untracked: status.untracked,
+                        ahead: ahead,
+                        behind: behind,
+                        hasConflicts: status.hasConflicts,
+                        isClean: status.isClean
+                    }
+
+                    console.log("[GitService] Ahead:", ahead, "Behind:", behind)
+                }
+            }
+        }
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                aheadBehindProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            _aheadBehindPending = false
+
+            if (exitCode !== 0) {
+                // Non-zero exit is normal when no upstream is configured
+                // Reset ahead/behind to 0
+                status = {
+                    staged: status.staged,
+                    unstaged: status.unstaged,
+                    untracked: status.untracked,
+                    ahead: 0,
+                    behind: 0,
+                    hasConflicts: status.hasConflicts,
+                    isClean: status.isClean
+                }
+                console.log("[GitService] No upstream configured (or error)")
+            }
+
+            stderrText = ""
+            _checkRefreshComplete()
+        }
+    }
+
+    /**
+     * Process: Stage a file
+     * Uses: git add -- <path>
+     */
+    Process {
+        id: stageProcess
+        running: false
+
+        property string stderrText: ""
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                stageProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                console.log("[GitService] File staged successfully")
+                refresh()
+            } else {
+                _handleError("Failed to stage file", stderrText)
+            }
+            stderrText = ""
+        }
+    }
+
+    /**
+     * Process: Unstage a file
+     * Uses: git reset HEAD -- <path>
+     */
+    Process {
+        id: unstageProcess
+        running: false
+
+        property string stderrText: ""
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                unstageProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                console.log("[GitService] File unstaged successfully")
+                refresh()
+            } else {
+                _handleError("Failed to unstage file", stderrText)
+            }
+            stderrText = ""
+        }
+    }
+
+    /**
+     * Process: Stage all files
+     * Uses: git add -A
+     */
+    Process {
+        id: stageAllProcess
+        running: false
+
+        property string stderrText: ""
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                stageAllProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                console.log("[GitService] All files staged successfully")
+                refresh()
+            } else {
+                _handleError("Failed to stage all files", stderrText)
+            }
+            stderrText = ""
+        }
+    }
+
+    /**
+     * Process: Create commit
+     * Uses: git commit -m "<message>"
+     */
+    Process {
+        id: commitProcess
+        running: false
+
+        property string stdoutText: ""
+        property string stderrText: ""
+
+        stdout: StdioCollector {
+            onCollected: text => {
+                commitProcess.stdoutText = text
+            }
+        }
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                commitProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                // Extract commit SHA from output
+                // Format: "[branch sha] message"
+                const match = stdoutText.match(/\[[\w\/-]+\s+([a-f0-9]+)\]/)
+                const sha = match ? match[1] : ""
+
+                console.log("[GitService] Commit created:", sha)
+                commitCreated(sha)
+                refresh()
+            } else {
+                _handleError("Failed to create commit", stderrText)
+            }
+            stdoutText = ""
+            stderrText = ""
+        }
+    }
+
+    /**
+     * Process: Push to remote
+     * Uses: git push
+     */
+    Process {
+        id: pushProcess
+        running: false
+
+        property string stderrText: ""
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                pushProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                console.log("[GitService] Push successful")
+                refresh()
+            } else {
+                // Check for common push errors
+                if (stderrText.includes("rejected")) {
+                    _handleError("Push rejected - pull first", "")
+                } else if (stderrText.includes("no upstream")) {
+                    _handleError("No remote configured", "")
+                } else {
+                    _handleError("Push failed", stderrText)
+                }
+            }
+            stderrText = ""
+        }
+    }
+
+    /**
+     * Process: Get diff for a file
+     * Uses: git diff [--cached] -- <path>
+     */
+    Process {
+        id: diffProcess
+        running: false
+
+        property string _filePath: ""
+        property bool _staged: false
+        property string diffText: ""
+        property string stderrText: ""
+
+        stdout: StdioCollector {
+            onCollected: text => {
+                diffProcess.diffText = text
+            }
+        }
+
+        stderr: StdioCollector {
+            onCollected: text => {
+                diffProcess.stderrText = text
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                diffReady(_filePath, _staged, diffText)
+            } else {
+                _handleError("Failed to get diff", stderrText)
+            }
+            diffText = ""
+            stderrText = ""
+            _filePath = ""
+        }
+    }
+
+    // =========================================================================
+    // INITIALIZATION
+    // =========================================================================
+
+    Component.onCompleted: {
+        console.log("[GitService] Singleton initialized")
+    }
+
+    Component.onDestruction: {
+        console.log("[GitService] Singleton destroyed")
+    }
+}

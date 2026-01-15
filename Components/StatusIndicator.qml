@@ -1,0 +1,633 @@
+/**
+ * StatusIndicator.qml - Colorblind-Accessible Git Status Indicator
+ *
+ * This component provides visual feedback for git repository status using:
+ * - Shape-based icons that are distinguishable without color
+ * - Optional text labels for colorblind accessibility
+ * - Multiple color palettes optimized for different types of color vision
+ *
+ * Task: T012 - Create Components/StatusIndicator.qml with shape-based icons for all states
+ * Requirements: FR-029, FR-030, FR-031, FR-032
+ *
+ * Status States:
+ * - clean:    Checkmark icon, green (repo is up to date, no changes)
+ * - modified: Half-circle icon, orange/yellow (uncommitted changes)
+ * - ahead:    Up arrow icon, blue (local commits not pushed)
+ * - behind:   Down arrow icon, purple (remote has new commits)
+ * - conflict: Warning triangle with exclamation, red (merge conflicts)
+ * - loading:  Spinning indicator (refresh in progress)
+ *
+ * Color Palettes:
+ * - shapes:       Standard colors with distinct shapes (default)
+ * - highcontrast: High contrast black/white
+ * - deuteranopia: Blue/orange optimized (red-green colorblindness)
+ * - protanopia:   Blue/yellow optimized (red colorblindness)
+ */
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+Item {
+    id: root
+
+    // =========================================================================
+    // PUBLIC PROPERTIES
+    // =========================================================================
+
+    /**
+     * Current status state
+     * Valid values: "clean" | "modified" | "ahead" | "behind" | "conflict" | "loading"
+     */
+    property string status: "clean"
+
+    /**
+     * Enable colorblind mode - shows text labels alongside icons
+     * Bound to SettingsService.colorblindMode when integrated
+     */
+    property bool colorblindMode: false
+
+    /**
+     * Color palette for accessibility
+     * Valid values: "shapes" | "highcontrast" | "deuteranopia" | "protanopia"
+     * Bound to SettingsService.colorblindPalette when integrated
+     */
+    property string colorblindPalette: "shapes"
+
+    /**
+     * Icon size in pixels (width and height)
+     */
+    property real size: 16
+
+    /**
+     * Force showing label regardless of colorblindMode
+     */
+    property bool showLabel: false
+
+    /**
+     * Optional tooltip text override
+     * If empty, uses the status label as tooltip
+     */
+    property string tooltipText: ""
+
+    /**
+     * Animation duration for loading spinner (milliseconds)
+     */
+    property int animationDuration: 1000
+
+    /**
+     * Compact mode - reduces spacing for bar widget use
+     */
+    property bool compact: false
+
+    // =========================================================================
+    // COMPUTED PROPERTIES
+    // =========================================================================
+
+    /**
+     * Whether to display the text label
+     */
+    readonly property bool displayLabel: colorblindMode || showLabel
+
+    /**
+     * Current status color based on palette
+     */
+    readonly property color statusColor: internal.getStatusColor(status, colorblindPalette)
+
+    /**
+     * Current status label text
+     */
+    readonly property string statusLabel: internal.getStatusLabel(status)
+
+    /**
+     * Icon source URL for current status (for external use if needed)
+     */
+    readonly property url iconSource: internal.getIconSource(status)
+
+    // =========================================================================
+    // SIGNALS
+    // =========================================================================
+
+    /**
+     * Emitted when the indicator is clicked
+     */
+    signal clicked()
+
+    /**
+     * Emitted when status changes
+     */
+    signal statusChanged(string newStatus)
+
+    // =========================================================================
+    // LAYOUT
+    // =========================================================================
+
+    implicitWidth: layout.implicitWidth
+    implicitHeight: Math.max(root.size, layout.implicitHeight)
+
+    RowLayout {
+        id: layout
+        anchors.centerIn: parent
+        spacing: root.compact ? 2 : 4
+
+        // Icon container using Canvas for reliable shape rendering
+        Item {
+            id: iconContainer
+            Layout.preferredWidth: root.size
+            Layout.preferredHeight: root.size
+            Layout.alignment: Qt.AlignVCenter
+
+            // Canvas-based shape renderer
+            Canvas {
+                id: shapeCanvas
+                anchors.fill: parent
+                antialiasing: true
+
+                // Properties that trigger repaint
+                property string currentStatus: root.status
+                property color currentColor: root.statusColor
+                property real spinAngle: 0
+
+                onCurrentStatusChanged: requestPaint()
+                onCurrentColorChanged: requestPaint()
+                onSpinAngleChanged: if (currentStatus === "loading") requestPaint()
+
+                // Spinner animation
+                NumberAnimation on spinAngle {
+                    from: 0
+                    to: 360
+                    duration: root.animationDuration
+                    loops: Animation.Infinite
+                    running: shapeCanvas.currentStatus === "loading"
+                }
+
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.reset()
+                    ctx.clearRect(0, 0, width, height)
+
+                    var w = width
+                    var h = height
+                    var cx = w / 2
+                    var cy = h / 2
+                    var strokeWidth = Math.max(1.5, w / 10)
+
+                    ctx.strokeStyle = currentColor
+                    ctx.fillStyle = currentColor
+                    ctx.lineWidth = strokeWidth
+                    ctx.lineCap = "round"
+                    ctx.lineJoin = "round"
+
+                    switch (currentStatus) {
+                        case "clean":
+                            drawCheckmark(ctx, w, h, strokeWidth)
+                            break
+                        case "modified":
+                            drawHalfCircle(ctx, cx, cy, w, h, strokeWidth)
+                            break
+                        case "ahead":
+                            drawUpArrow(ctx, cx, cy, w, h, strokeWidth)
+                            break
+                        case "behind":
+                            drawDownArrow(ctx, cx, cy, w, h, strokeWidth)
+                            break
+                        case "conflict":
+                            drawWarningTriangle(ctx, cx, cy, w, h, strokeWidth)
+                            break
+                        case "loading":
+                            drawSpinner(ctx, cx, cy, w, h, strokeWidth, spinAngle)
+                            break
+                        default:
+                            // Unknown status - draw question mark circle
+                            drawUnknown(ctx, cx, cy, w, h, strokeWidth)
+                    }
+                }
+
+                // -------------------------------------------------------------
+                // SHAPE DRAWING FUNCTIONS
+                // -------------------------------------------------------------
+
+                /**
+                 * Draw checkmark (clean status)
+                 * Shape: A simple checkmark/tick mark
+                 * Distinct: Only status using diagonal line combination
+                 */
+                function drawCheckmark(ctx, w, h, strokeWidth) {
+                    var padding = w * 0.15
+                    var startX = padding
+                    var startY = h * 0.5
+                    var midX = w * 0.4
+                    var midY = h - padding
+                    var endX = w - padding
+                    var endY = padding
+
+                    ctx.beginPath()
+                    ctx.moveTo(startX, startY)
+                    ctx.lineTo(midX, midY)
+                    ctx.lineTo(endX, endY)
+                    ctx.stroke()
+                }
+
+                /**
+                 * Draw half-circle/partial circle (modified status)
+                 * Shape: Circle with right half filled
+                 * Distinct: Only status using partial fill pattern
+                 */
+                function drawHalfCircle(ctx, cx, cy, w, h, strokeWidth) {
+                    var radius = Math.min(w, h) / 2 - strokeWidth
+
+                    // Draw outer circle (stroke only)
+                    ctx.beginPath()
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+                    ctx.stroke()
+
+                    // Fill right half
+                    ctx.beginPath()
+                    ctx.moveTo(cx, cy - radius)
+                    ctx.arc(cx, cy, radius, -Math.PI / 2, Math.PI / 2)
+                    ctx.closePath()
+                    ctx.fill()
+                }
+
+                /**
+                 * Draw up arrow (ahead status)
+                 * Shape: Upward pointing arrow with stem
+                 * Distinct: Only status pointing upward
+                 */
+                function drawUpArrow(ctx, cx, cy, w, h, strokeWidth) {
+                    var padding = w * 0.2
+                    var arrowHeight = h * 0.35
+                    var stemTop = padding + arrowHeight
+                    var stemBottom = h - padding
+
+                    // Draw stem
+                    ctx.beginPath()
+                    ctx.moveTo(cx, stemBottom)
+                    ctx.lineTo(cx, stemTop)
+                    ctx.stroke()
+
+                    // Draw arrow head
+                    ctx.beginPath()
+                    ctx.moveTo(padding, stemTop)
+                    ctx.lineTo(cx, padding)
+                    ctx.lineTo(w - padding, stemTop)
+                    ctx.stroke()
+                }
+
+                /**
+                 * Draw down arrow (behind status)
+                 * Shape: Downward pointing arrow with stem
+                 * Distinct: Only status pointing downward
+                 */
+                function drawDownArrow(ctx, cx, cy, w, h, strokeWidth) {
+                    var padding = w * 0.2
+                    var arrowHeight = h * 0.35
+                    var stemTop = padding
+                    var stemBottom = h - padding - arrowHeight
+
+                    // Draw stem
+                    ctx.beginPath()
+                    ctx.moveTo(cx, stemTop)
+                    ctx.lineTo(cx, stemBottom)
+                    ctx.stroke()
+
+                    // Draw arrow head
+                    ctx.beginPath()
+                    ctx.moveTo(padding, stemBottom)
+                    ctx.lineTo(cx, h - padding)
+                    ctx.lineTo(w - padding, stemBottom)
+                    ctx.stroke()
+                }
+
+                /**
+                 * Draw warning triangle with exclamation (conflict status)
+                 * Shape: Triangle with exclamation point inside
+                 * Distinct: Only status using triangle shape
+                 */
+                function drawWarningTriangle(ctx, cx, cy, w, h, strokeWidth) {
+                    var padding = w * 0.1
+                    var triangleTop = padding
+                    var triangleBottom = h - padding
+
+                    // Calculate triangle points
+                    var topPoint = { x: cx, y: triangleTop }
+                    var leftPoint = { x: padding, y: triangleBottom }
+                    var rightPoint = { x: w - padding, y: triangleBottom }
+
+                    // Draw triangle outline
+                    ctx.beginPath()
+                    ctx.moveTo(topPoint.x, topPoint.y)
+                    ctx.lineTo(leftPoint.x, leftPoint.y)
+                    ctx.lineTo(rightPoint.x, rightPoint.y)
+                    ctx.closePath()
+                    ctx.stroke()
+
+                    // Draw exclamation mark (line)
+                    var exclamTop = h * 0.35
+                    var exclamBottom = h * 0.6
+                    ctx.beginPath()
+                    ctx.moveTo(cx, exclamTop)
+                    ctx.lineTo(cx, exclamBottom)
+                    ctx.stroke()
+
+                    // Draw exclamation dot
+                    var dotY = h * 0.75
+                    var dotRadius = strokeWidth * 0.6
+                    ctx.beginPath()
+                    ctx.arc(cx, dotY, dotRadius, 0, Math.PI * 2)
+                    ctx.fill()
+                }
+
+                /**
+                 * Draw spinning arc (loading status)
+                 * Shape: Partial circle arc that rotates
+                 * Distinct: Only animated status
+                 */
+                function drawSpinner(ctx, cx, cy, w, h, strokeWidth, angle) {
+                    var radius = Math.min(w, h) / 2 - strokeWidth
+
+                    // Convert angle to radians
+                    var startAngle = (angle - 90) * Math.PI / 180
+                    var endAngle = (angle + 180) * Math.PI / 180
+
+                    ctx.beginPath()
+                    ctx.arc(cx, cy, radius, startAngle, endAngle)
+                    ctx.stroke()
+                }
+
+                /**
+                 * Draw unknown/fallback indicator
+                 * Shape: Circle with question mark
+                 */
+                function drawUnknown(ctx, cx, cy, w, h, strokeWidth) {
+                    var radius = Math.min(w, h) / 2 - strokeWidth
+
+                    // Draw circle
+                    ctx.beginPath()
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+                    ctx.stroke()
+
+                    // Draw question mark (simplified)
+                    ctx.font = (h * 0.5) + "px sans-serif"
+                    ctx.textAlign = "center"
+                    ctx.textBaseline = "middle"
+                    ctx.fillText("?", cx, cy)
+                }
+            }
+        }
+
+        // Status text label (shown when colorblindMode or showLabel is true)
+        Text {
+            id: labelText
+            Layout.alignment: Qt.AlignVCenter
+            visible: root.displayLabel
+            text: root.status === "loading" ? qsTr("Loading...") : root.statusLabel
+            color: root.statusColor
+            font.pixelSize: root.compact ? Math.max(9, root.size * 0.6) : Math.max(10, root.size * 0.75)
+            font.weight: Font.Medium
+            elide: Text.ElideRight
+            Layout.maximumWidth: root.compact ? 60 : -1
+        }
+    }
+
+    // =========================================================================
+    // TOOLTIP
+    // =========================================================================
+
+    ToolTip {
+        id: tooltip
+        visible: mouseArea.containsMouse && (root.tooltipText || root.statusLabel)
+        delay: 500
+        timeout: 5000
+        text: root.tooltipText || internal.getTooltipText(root.status)
+        font.pixelSize: 12
+
+        background: Rectangle {
+            color: "#333333"
+            border.color: "#555555"
+            border.width: 1
+            radius: 4
+        }
+
+        contentItem: Text {
+            text: tooltip.text
+            font: tooltip.font
+            color: "#ffffff"
+        }
+    }
+
+    // =========================================================================
+    // MOUSE INTERACTION
+    // =========================================================================
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+
+        onClicked: {
+            root.clicked()
+        }
+    }
+
+    // =========================================================================
+    // INTERNAL IMPLEMENTATION
+    // =========================================================================
+
+    QtObject {
+        id: internal
+
+        // ---------------------------------------------------------------------
+        // COLOR PALETTES
+        // ---------------------------------------------------------------------
+
+        /**
+         * Standard color palette with distinct shapes
+         * Colors chosen for visual appeal while maintaining distinctiveness
+         */
+        readonly property var shapesColors: ({
+            clean:    "#4CAF50",  // Green - success/positive
+            modified: "#FF9800",  // Orange - warning/attention
+            ahead:    "#2196F3",  // Blue - informational
+            behind:   "#9C27B0",  // Purple - secondary info
+            conflict: "#F44336",  // Red - error/danger
+            loading:  "#9E9E9E"   // Gray - neutral
+        })
+
+        /**
+         * High contrast palette for maximum visibility
+         * Uses bold colors against dark backgrounds
+         */
+        readonly property var highcontrastColors: ({
+            clean:    "#00FF00",  // Bright green
+            modified: "#FFFF00",  // Bright yellow
+            ahead:    "#00FFFF",  // Cyan
+            behind:   "#FF00FF",  // Magenta
+            conflict: "#FF0000",  // Bright red
+            loading:  "#FFFFFF"   // White
+        })
+
+        /**
+         * Deuteranopia-optimized palette (red-green colorblindness)
+         * Uses blue/orange spectrum, avoids red/green confusion
+         * Based on Wong's colorblind-safe palette
+         */
+        readonly property var deuteranopiaColors: ({
+            clean:    "#0072B2",  // Blue (safe)
+            modified: "#E69F00",  // Orange (safe)
+            ahead:    "#56B4E9",  // Sky blue
+            behind:   "#CC79A7",  // Reddish purple (distinguishable)
+            conflict: "#D55E00",  // Vermillion (distinct from orange)
+            loading:  "#999999"   // Gray
+        })
+
+        /**
+         * Protanopia-optimized palette (red colorblindness)
+         * Uses blue/yellow spectrum, avoids red entirely
+         * Based on Wong's colorblind-safe palette
+         */
+        readonly property var protanopiaColors: ({
+            clean:    "#0072B2",  // Blue
+            modified: "#F0E442",  // Yellow
+            ahead:    "#56B4E9",  // Sky blue
+            behind:   "#CC79A7",  // Reddish purple
+            conflict: "#E69F00",  // Orange (visible, avoids red)
+            loading:  "#999999"   // Gray
+        })
+
+        // ---------------------------------------------------------------------
+        // STATUS LABELS (for accessibility)
+        // ---------------------------------------------------------------------
+
+        readonly property var statusLabels: ({
+            clean:    qsTr("Clean"),
+            modified: qsTr("Modified"),
+            ahead:    qsTr("Ahead"),
+            behind:   qsTr("Behind"),
+            conflict: qsTr("Conflict"),
+            loading:  qsTr("Loading")
+        })
+
+        // ---------------------------------------------------------------------
+        // TOOLTIP DESCRIPTIONS
+        // ---------------------------------------------------------------------
+
+        readonly property var tooltipDescriptions: ({
+            clean:    qsTr("Repository is clean - no uncommitted changes"),
+            modified: qsTr("Repository has uncommitted changes"),
+            ahead:    qsTr("Local commits not yet pushed to remote"),
+            behind:   qsTr("Remote has commits not yet pulled"),
+            conflict: qsTr("Merge conflicts detected - requires resolution"),
+            loading:  qsTr("Refreshing repository status...")
+        })
+
+        // ---------------------------------------------------------------------
+        // ICON PATHS (for external reference)
+        // ---------------------------------------------------------------------
+
+        readonly property var iconPaths: ({
+            clean:    "../Assets/icons/clean.svg",
+            modified: "../Assets/icons/modified.svg",
+            ahead:    "../Assets/icons/ahead.svg",
+            behind:   "../Assets/icons/behind.svg",
+            conflict: "../Assets/icons/conflict.svg",
+            loading:  ""
+        })
+
+        // ---------------------------------------------------------------------
+        // HELPER FUNCTIONS
+        // ---------------------------------------------------------------------
+
+        /**
+         * Get color for status based on current palette
+         * @param {string} status - Current status state
+         * @param {string} palette - Color palette name
+         * @returns {color} Color value for the status
+         */
+        function getStatusColor(status, palette) {
+            var paletteMap = {
+                "shapes": shapesColors,
+                "highcontrast": highcontrastColors,
+                "deuteranopia": deuteranopiaColors,
+                "protanopia": protanopiaColors
+            }
+
+            var colors = paletteMap[palette] || shapesColors
+            return colors[status] || colors["loading"]
+        }
+
+        /**
+         * Get localized label for status
+         * @param {string} status - Current status state
+         * @returns {string} Localized status label
+         */
+        function getStatusLabel(status) {
+            return statusLabels[status] || status
+        }
+
+        /**
+         * Get tooltip text for status
+         * @param {string} status - Current status state
+         * @returns {string} Descriptive tooltip text
+         */
+        function getTooltipText(status) {
+            return tooltipDescriptions[status] || statusLabels[status] || status
+        }
+
+        /**
+         * Get icon source URL for status
+         * @param {string} status - Current status state
+         * @returns {url} Resolved icon URL
+         */
+        function getIconSource(status) {
+            var path = iconPaths[status]
+            if (path) {
+                return Qt.resolvedUrl(path)
+            }
+            return ""
+        }
+
+        /**
+         * Validate status value
+         * @param {string} status - Status to validate
+         * @returns {boolean} True if valid status
+         */
+        function isValidStatus(status) {
+            return iconPaths.hasOwnProperty(status)
+        }
+    }
+
+    // =========================================================================
+    // STATUS CHANGE HANDLER
+    // =========================================================================
+
+    onStatusChanged: {
+        if (!internal.isValidStatus(status)) {
+            console.warn("[StatusIndicator] Unknown status:", status, "- valid values are: clean, modified, ahead, behind, conflict, loading")
+        }
+        root.statusChanged(status)
+    }
+
+    // =========================================================================
+    // TRANSITIONS (smooth color changes)
+    // =========================================================================
+
+    Behavior on statusColor {
+        ColorAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
+        }
+    }
+
+    // =========================================================================
+    // COMPONENT LIFECYCLE
+    // =========================================================================
+
+    Component.onCompleted: {
+        // Initial validation
+        if (!internal.isValidStatus(status)) {
+            console.warn("[StatusIndicator] Initial status invalid:", status, "- defaulting to 'clean'")
+            status = "clean"
+        }
+    }
+}
