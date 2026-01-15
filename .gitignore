@@ -1,7 +1,7 @@
 # Quick-Git Noctalia Plugin - .gitignore
 .specify/
 .claude/
-Claude.md
+CLAUDE.md
 docs/
 
 
