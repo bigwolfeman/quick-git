@@ -3,6 +3,7 @@
 .claude/
 CLAUDE.md
 docs/
+specs/
 
 
 # QML/Qt build artifacts
