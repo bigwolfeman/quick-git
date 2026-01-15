@@ -1,0 +1,387 @@
+{
+  "meta": {
+    "language": "English",
+    "locale": "en",
+    "version": "1.0.0"
+  },
+  "barWidget": {
+    "tooltip": {
+      "openPanel": "Open Quick-Git panel",
+      "gitStatus": "Git repository status",
+      "issueCount": "Open issues count",
+      "syncStatus": "Sync status with remote",
+      "notAGitRepo": "Not a Git Repository",
+      "currentDirNotTracked": "Current directory is not tracked by git.",
+      "clickForOptions": "Click to open Quick-Git panel for options to get started."
+    },
+    "status": {
+      "loading": "Loading...",
+      "syncing": "Syncing...",
+      "idle": "Idle",
+      "noRepo": "No repo",
+      "noBranch": "No branch"
+    }
+  },
+  "panel": {
+    "header": {
+      "title": "Quick-Git",
+      "subtitle": "Git & GitHub Integration"
+    },
+    "viewToggle": {
+      "commits": "Commits",
+      "issues": "Issues",
+      "settings": "Settings"
+    },
+    "tabs": {
+      "changes": "Changes",
+      "history": "History",
+      "branches": "Branches"
+    }
+  },
+  "commitsView": {
+    "sections": {
+      "staged": "Staged",
+      "unstaged": "Unstaged",
+      "untracked": "Untracked"
+    },
+    "actions": {
+      "commit": "Commit",
+      "committing": "Committing...",
+      "push": "Push",
+      "pushing": "Pushing...",
+      "pull": "Pull",
+      "fetch": "Fetch",
+      "stageAll": "Stage All",
+      "unstageAll": "Unstage All",
+      "stageFile": "Stage file",
+      "unstageFile": "Unstage file",
+      "discardChanges": "Discard Changes",
+      "amendCommit": "Amend Last Commit",
+      "viewDiff": "View diff",
+      "hideDiff": "Hide diff"
+    },
+    "input": {
+      "commitMessagePlaceholder": "Commit message...",
+      "commitMessageHint": "Describe your changes",
+      "firstLine": "first line",
+      "ctrlEnterToCommit": "Ctrl+Enter to commit"
+    },
+    "fileActions": {
+      "viewDiff": "View Diff",
+      "openFile": "Open File",
+      "revertFile": "Revert File"
+    },
+    "filter": {
+      "all": "All"
+    }
+  },
+  "issuesView": {
+    "filters": {
+      "openIssues": "Open Issues",
+      "closedIssues": "Closed Issues",
+      "allIssues": "All Issues",
+      "assignedToMe": "Assigned to Me",
+      "createdByMe": "Created by Me"
+    },
+    "actions": {
+      "newIssue": "New Issue",
+      "addComment": "Add Comment",
+      "close": "Close",
+      "reopen": "Reopen",
+      "editIssue": "Edit Issue",
+      "deleteIssue": "Delete Issue",
+      "assignUser": "Assign User",
+      "addLabel": "Add Label",
+      "removeLabel": "Remove Label"
+    },
+    "details": {
+      "comments": "Comments",
+      "labels": "Labels",
+      "assignees": "Assignees",
+      "milestone": "Milestone",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "closedAt": "Closed"
+    },
+    "input": {
+      "titlePlaceholder": "Issue title...",
+      "bodyPlaceholder": "Describe the issue...",
+      "commentPlaceholder": "Write a comment..."
+    }
+  },
+  "diffViewer": {
+    "actions": {
+      "showFullDiff": "Show full diff",
+      "collapseAll": "Collapse All",
+      "expandAll": "Expand All",
+      "sideBySide": "Side by Side",
+      "unified": "Unified View",
+      "copyDiff": "Copy Diff",
+      "openInExternalEditor": "Open in External Editor"
+    },
+    "status": {
+      "binaryFile": "Binary file",
+      "binaryFileCannotDisplay": "Binary file - cannot display diff",
+      "fileTooLarge": "File too large to display",
+      "fileTooLargeSize": "File size: {size} (max: {maxSize})",
+      "noChanges": "No changes in this file",
+      "newFile": "New file",
+      "deletedFile": "Deleted file",
+      "renamedFile": "Renamed file",
+      "movedFile": "Moved file",
+      "loadingDiff": "Loading diff...",
+      "truncated": "Diff truncated ({shown} of {total} lines shown)"
+    },
+    "conflicts": {
+      "conflictMarkersWarning": "This file contains merge conflict markers that need to be resolved",
+      "conflictDetected": "Merge conflict detected"
+    },
+    "stats": {
+      "additions": "additions",
+      "deletions": "deletions",
+      "linesChanged": "lines changed"
+    }
+  },
+  "settings": {
+    "sections": {
+      "appearance": "Appearance",
+      "behavior": "Behavior",
+      "authentication": "Authentication",
+      "advanced": "Advanced"
+    },
+    "appearance": {
+      "colorblindMode": "Colorblind Mode",
+      "colorblindModeDesc": "Use colorblind-friendly indicators",
+      "palette": "Color Palette",
+      "paletteDesc": "Choose your preferred color scheme",
+      "theme": "Theme",
+      "themeDesc": "Select light or dark theme"
+    },
+    "behavior": {
+      "refreshInterval": "Refresh Interval",
+      "refreshIntervalDesc": "How often to check for updates (seconds)",
+      "defaultView": "Default View",
+      "defaultViewDesc": "View shown when panel opens",
+      "autoFetch": "Auto Fetch",
+      "autoFetchDesc": "Automatically fetch from remote",
+      "showNotifications": "Show Notifications",
+      "showNotificationsDesc": "Display desktop notifications"
+    },
+    "advanced": {
+      "debugMode": "Debug Mode",
+      "debugModeDesc": "Enable debug logging",
+      "clearCache": "Clear Cache",
+      "clearCacheDesc": "Remove cached data",
+      "resetSettings": "Reset Settings",
+      "resetSettingsDesc": "Restore default settings"
+    }
+  },
+  "statusIndicators": {
+    "repository": {
+      "clean": "Clean",
+      "modified": "Modified",
+      "ahead": "Ahead",
+      "behind": "Behind",
+      "conflict": "Conflict",
+      "diverged": "Diverged",
+      "detached": "Detached HEAD",
+      "rebasing": "Rebasing",
+      "merging": "Merging",
+      "cherryPicking": "Cherry-picking"
+    },
+    "file": {
+      "added": "Added",
+      "modified": "Modified",
+      "deleted": "Deleted",
+      "renamed": "Renamed",
+      "copied": "Copied",
+      "untracked": "Untracked",
+      "ignored": "Ignored",
+      "conflicted": "Conflicted"
+    },
+    "sync": {
+      "upToDate": "Up to date",
+      "aheadBy": "Ahead by {count}",
+      "behindBy": "Behind by {count}",
+      "divergedBy": "Diverged by {ahead} ahead, {behind} behind"
+    }
+  },
+  "auth": {
+    "github": {
+      "authenticateWith": "Authenticate with GitHub",
+      "enterCodeAt": "Enter code at",
+      "connectedAs": "Connected as",
+      "disconnect": "Disconnect",
+      "reconnect": "Reconnect",
+      "verifying": "Verifying...",
+      "waitingForAuth": "Waiting for authorization...",
+      "authSuccess": "Successfully authenticated",
+      "authFailed": "Authentication failed"
+    },
+    "permissions": {
+      "required": "Required permissions",
+      "repoAccess": "Repository access",
+      "issueAccess": "Issue management",
+      "userInfo": "User information"
+    }
+  },
+  "errors": {
+    "git": {
+      "notAGitRepository": "Not a git repository",
+      "noRemoteConfigured": "No remote configured",
+      "branchNotFound": "Branch not found",
+      "mergeConflict": "Merge conflict detected",
+      "uncommittedChanges": "Uncommitted changes present",
+      "nothingToCommit": "Nothing to commit"
+    },
+    "network": {
+      "networkError": "Network error",
+      "offline": "You are offline",
+      "timeout": "Request timed out",
+      "connectionFailed": "Connection failed"
+    },
+    "auth": {
+      "sessionExpired": "Session expired",
+      "rateLimited": "Rate limited - please wait",
+      "unauthorized": "Unauthorized - please authenticate",
+      "forbidden": "Access forbidden",
+      "tokenInvalid": "Token invalid or expired"
+    },
+    "general": {
+      "unknownError": "An unknown error occurred",
+      "operationFailed": "Operation failed",
+      "tryAgain": "Please try again",
+      "contactSupport": "Contact support if issue persists"
+    }
+  },
+  "emptyStates": {
+    "noChanges": "No changes",
+    "noChangesDesc": "Your working directory is clean",
+    "noIssues": "No issues",
+    "noIssuesDesc": "No issues found matching your filters",
+    "noCommits": "No commits",
+    "noCommitsDesc": "No commits in this branch yet",
+    "noRepositories": "No repositories",
+    "noRepositoriesDesc": "Add a repository to get started",
+    "noBranches": "No branches",
+    "noBranchesDesc": "No branches found",
+    "noStaged": "No staged changes",
+    "noStagedDesc": "Stage files to include in your commit",
+    "noResults": "No results",
+    "noResultsDesc": "Try adjusting your search or filters",
+    "workingTreeClean": "Working tree clean",
+    "newRepository": "New Repository",
+    "newRepositoryDesc": "This repository has no commits yet.",
+    "firstCommitGuidance": "To create your first commit:",
+    "firstCommitStep1": "Add some files to your repository",
+    "firstCommitStep2": "Stage files using the [+] button",
+    "firstCommitStep3": "Write a commit message and click Commit",
+    "notAGitRepository": "Not a Git Repository",
+    "notAGitRepositoryDesc": "The current directory is not a git repository.",
+    "toGetStarted": "To get started:",
+    "useRepoSelector": "Use the repository selector dropdown to switch to a git repository",
+    "openTerminalInRepo": "Or open a terminal in a git repository folder",
+    "runGitInit": "Run 'git init' to create a new repository here",
+    "noGitHubRemote": "No GitHub Remote",
+    "noGitHubRemoteDesc": "This repository doesn't have a GitHub remote configured."
+  },
+  "repoSelector": {
+    "title": "Select Repository",
+    "actions": {
+      "addRepository": "Add Repository",
+      "removeRepository": "Remove Repository",
+      "refreshList": "Refresh List",
+      "openInFileManager": "Open in File Manager"
+    },
+    "sections": {
+      "recentRepositories": "Recent Repositories",
+      "pinnedRepositories": "Pinned Repositories",
+      "allRepositories": "All Repositories"
+    },
+    "input": {
+      "searchPlaceholder": "Search repositories...",
+      "pathPlaceholder": "Enter repository path..."
+    },
+    "status": {
+      "currentRepo": "Current",
+      "pinned": "Pinned",
+      "recent": "Recent"
+    }
+  },
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "edit": "Edit",
+      "copy": "Copy",
+      "refresh": "Refresh",
+      "retry": "Retry",
+      "close": "Close",
+      "back": "Back",
+      "next": "Next",
+      "done": "Done",
+      "apply": "Apply",
+      "reset": "Reset",
+      "search": "Search",
+      "filter": "Filter",
+      "sort": "Sort",
+      "select": "Select",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All"
+    },
+    "labels": {
+      "loading": "Loading...",
+      "saving": "Saving...",
+      "processing": "Processing...",
+      "success": "Success",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info",
+      "required": "Required",
+      "optional": "Optional",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "on": "On",
+      "off": "Off",
+      "yes": "Yes",
+      "no": "No",
+      "all": "All",
+      "none": "None"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{count} minutes ago",
+      "hoursAgo": "{count} hours ago",
+      "daysAgo": "{count} days ago",
+      "weeksAgo": "{count} weeks ago",
+      "monthsAgo": "{count} months ago",
+      "yearsAgo": "{count} years ago"
+    },
+    "confirmations": {
+      "areYouSure": "Are you sure?",
+      "cannotBeUndone": "This action cannot be undone",
+      "discardChanges": "Discard unsaved changes?",
+      "deleteConfirm": "Are you sure you want to delete this?"
+    }
+  },
+  "accessibility": {
+    "screenReader": {
+      "newNotification": "New notification",
+      "menuOpened": "Menu opened",
+      "menuClosed": "Menu closed",
+      "dialogOpened": "Dialog opened",
+      "dialogClosed": "Dialog closed",
+      "loadingComplete": "Loading complete",
+      "errorOccurred": "Error occurred"
+    },
+    "labels": {
+      "mainNavigation": "Main navigation",
+      "fileList": "File list",
+      "issueList": "Issue list",
+      "commitHistory": "Commit history",
+      "settingsForm": "Settings form"
+    }
+  }
+}

@@ -113,13 +113,25 @@ Access settings from the **gear icon** in the panel:
 
 ## Keyboard Shortcuts
 
-Configure in Noctalia settings:
+### Global Shortcuts (Configure in Noctalia settings)
 
-| Action | Suggested Binding |
-|--------|-------------------|
-| Toggle panel | `Super+G` |
-| Refresh | `Ctrl+R` (when panel focused) |
-| Commit | `Ctrl+Enter` (with message focused) |
+| Shortcut | Action | Notes |
+|----------|--------|-------|
+| `Super+G` | Toggle panel | Default keybind (configurable) |
+
+### Panel Shortcuts (when Quick-Git panel is open)
+
+| Shortcut | Action | Context |
+|----------|--------|---------|
+| `Escape` | Close panel/dialog | Closes the Quick-Git panel or any open dialog |
+| `Ctrl+R` | Refresh status | Reloads git status from repository |
+| `Ctrl+Enter` | Submit commit | When commit message input is focused |
+
+### Tips
+
+- **Super+G** is the suggested default but can be changed in Noctalia's keybinding settings
+- **Ctrl+Enter** allows quick commits without clicking the button
+- **Escape** works to close dialogs first, then the main panel if pressed again
 
 ---
 

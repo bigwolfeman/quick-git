@@ -1,0 +1,228 @@
+{
+  "$schema": "https://noctalia.dev/schemas/plugin-manifest.json",
+  "id": "quick-git",
+  "name": "Quick Git",
+  "version": "1.0.0",
+  "description": "Git management panel with GitHub integration. View repository status at a glance, stage and commit changes, review diffs, and manage GitHub issues - all from a slide-down panel without leaving your workflow.",
+  "author": "Quick-Git Contributors",
+  "license": "MIT",
+  "repository": "https://github.com/quick-git/quick-git",
+  "homepage": "https://github.com/quick-git/quick-git#readme",
+  "bugs": "https://github.com/quick-git/quick-git/issues",
+  "minNoctaliaVersion": "3.0.0",
+  "category": "Development",
+  "tags": [
+    "git",
+    "github",
+    "version-control",
+    "development",
+    "vcs",
+    "repository",
+    "issues",
+    "commits",
+    "diff",
+    "accessibility"
+  ],
+  "entryPoints": {
+    "main": "Main.qml",
+    "barWidget": "BarWidget.qml",
+    "panel": "Panel.qml",
+    "settings": "Settings.qml"
+  },
+  "dependencies": [],
+  "permissions": [
+    "process",
+    "filesystem",
+    "network",
+    "keyring"
+  ],
+  "settings": {
+    "colorblindMode": {
+      "type": "boolean",
+      "default": false,
+      "title": "Colorblind Mode",
+      "description": "Enable colorblind-friendly indicators with shapes and optional text labels"
+    },
+    "colorblindPalette": {
+      "type": "string",
+      "default": "shapes",
+      "enum": [
+        "shapes",
+        "highcontrast",
+        "deuteranopia",
+        "protanopia"
+      ],
+      "enumLabels": {
+        "shapes": "Shapes + Labels",
+        "highcontrast": "High Contrast",
+        "deuteranopia": "Deuteranopia Optimized",
+        "protanopia": "Protanopia Optimized"
+      },
+      "title": "Colorblind Palette",
+      "description": "Color palette to use when colorblind mode is enabled",
+      "showWhen": {
+        "setting": "colorblindMode",
+        "equals": true
+      }
+    },
+    "refreshInterval": {
+      "type": "number",
+      "default": 30,
+      "minimum": 5,
+      "maximum": 300,
+      "step": 5,
+      "title": "Refresh Interval",
+      "description": "How often to refresh repository status (in seconds)",
+      "unit": "seconds"
+    },
+    "defaultView": {
+      "type": "string",
+      "default": "commits",
+      "enum": [
+        "commits",
+        "issues"
+      ],
+      "enumLabels": {
+        "commits": "Commits View",
+        "issues": "Issues View"
+      },
+      "title": "Default View",
+      "description": "Which view to show when the panel opens"
+    },
+    "recentRepos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "title": "Recent Repositories",
+      "description": "List of recently accessed repository paths",
+      "hidden": true,
+      "maxItems": 10
+    },
+    "githubToken": {
+      "type": "string",
+      "default": "",
+      "title": "GitHub Token",
+      "description": "GitHub OAuth access token (stored securely)",
+      "secure": true,
+      "hidden": true
+    },
+    "githubUsername": {
+      "type": "string",
+      "default": "",
+      "title": "GitHub Username",
+      "description": "Connected GitHub username",
+      "hidden": true
+    },
+    "showBranchInBar": {
+      "type": "boolean",
+      "default": true,
+      "title": "Show Branch in Bar",
+      "description": "Display the current branch name in the bar widget"
+    },
+    "showChangeCountInBar": {
+      "type": "boolean",
+      "default": true,
+      "title": "Show Change Count",
+      "description": "Display the number of changed files in the bar widget"
+    },
+    "autoDetectRepo": {
+      "type": "boolean",
+      "default": true,
+      "title": "Auto-detect Repository",
+      "description": "Automatically detect git repository in the current working directory"
+    },
+    "maxDiffLines": {
+      "type": "number",
+      "default": 500,
+      "minimum": 100,
+      "maximum": 2000,
+      "step": 100,
+      "title": "Max Diff Lines",
+      "description": "Maximum number of lines to display in inline diffs before truncation"
+    },
+    "currentRepoPath": {
+      "type": "string",
+      "default": "",
+      "title": "Current Repository",
+      "description": "Path to the currently selected repository",
+      "hidden": true
+    }
+  },
+  "ipcCommands": {
+    "refresh": {
+      "description": "Refresh the current repository status"
+    },
+    "stage": {
+      "description": "Stage a file for commit",
+      "args": {
+        "file": {
+          "type": "string",
+          "description": "Path to the file to stage"
+        }
+      }
+    },
+    "unstage": {
+      "description": "Unstage a file",
+      "args": {
+        "file": {
+          "type": "string",
+          "description": "Path to the file to unstage"
+        }
+      }
+    },
+    "commit": {
+      "description": "Create a commit with staged changes",
+      "args": {
+        "message": {
+          "type": "string",
+          "description": "Commit message"
+        }
+      }
+    },
+    "push": {
+      "description": "Push commits to remote"
+    },
+    "pull": {
+      "description": "Pull changes from remote"
+    },
+    "setRepo": {
+      "description": "Switch to a different repository",
+      "args": {
+        "path": {
+          "type": "string",
+          "description": "Path to the repository"
+        }
+      }
+    },
+    "togglePanel": {
+      "description": "Toggle the panel visibility"
+    },
+    "setView": {
+      "description": "Switch panel view",
+      "args": {
+        "view": {
+          "type": "string",
+          "enum": ["commits", "issues"],
+          "description": "View to switch to"
+        }
+      }
+    }
+  },
+  "platform": {
+    "os": ["linux"],
+    "display": ["wayland"],
+    "compositors": [
+      "hyprland",
+      "niri",
+      "sway",
+      "labwc",
+      "mangowc"
+    ]
+  },
+  "i18n": {
+    "default": "en",
+    "supported": ["en"]
+  }
+}

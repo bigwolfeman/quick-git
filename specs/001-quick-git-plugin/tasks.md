@@ -19,11 +19,11 @@
 
 **Purpose**: Initialize Noctalia plugin structure and core dependencies
 
-- [ ] T001 Create plugin directory structure per plan.md (Components/, Services/, Assets/, i18n/)
-- [ ] T002 Create manifest.json with plugin metadata, entry points, and settings schema
-- [ ] T003 [P] Create Main.qml with service initialization and IPC handlers
-- [ ] T004 [P] Create empty i18n/en.json with translation keys for all UI strings
-- [ ] T005 [P] Add placeholder icons to Assets/icons/ (status icons, GitHub logo)
+- [x] T001 Create plugin directory structure per plan.md (Components/, Services/, Assets/, i18n/)
+- [x] T002 Create manifest.json with plugin metadata, entry points, and settings schema
+- [x] T003 [P] Create Main.qml with service initialization and IPC handlers
+- [x] T004 [P] Create empty i18n/en.json with translation keys for all UI strings
+- [x] T005 [P] Add placeholder icons to Assets/icons/ (status icons, GitHub logo)
 
 ---
 
@@ -33,15 +33,15 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create Services/SettingsService.qml singleton with load/save and reactive properties
-- [ ] T007 Create Services/GitService.qml singleton skeleton with reactive properties (branch, status, isRepo)
-- [ ] T008 Implement GitService.setRepository(path) to switch repos and validate .git/ exists
-- [ ] T009 Implement GitService.refresh() using Process to run `git status --porcelain`
-- [ ] T010 Implement GitService branch detection using `git rev-parse --abbrev-ref HEAD`
-- [ ] T011 Implement GitService ahead/behind count using `git rev-list --left-right --count`
-- [ ] T012 [P] Create Components/StatusIndicator.qml with shape-based icons for all states
-- [ ] T013 Create Panel.qml slide-down container with view toggle and header layout
-- [ ] T014 Create BarWidget.qml skeleton that registers with Noctalia bar
+- [x] T006 Create Services/SettingsService.qml singleton with load/save and reactive properties
+- [x] T007 Create Services/GitService.qml singleton skeleton with reactive properties (branch, status, isRepo)
+- [x] T008 Implement GitService.setRepository(path) to switch repos and validate .git/ exists
+- [x] T009 Implement GitService.refresh() using Process to run `git status --porcelain`
+- [x] T010 Implement GitService branch detection using `git rev-parse --abbrev-ref HEAD`
+- [x] T011 Implement GitService ahead/behind count using `git rev-list --left-right --count`
+- [x] T012 [P] Create Components/StatusIndicator.qml with shape-based icons for all states
+- [x] T013 Create Panel.qml slide-down container with view toggle and header layout
+- [x] T014 Create BarWidget.qml skeleton that registers with Noctalia bar
 
 **Checkpoint**: Foundation ready - GitService can detect repo state, Panel slides down
 
@@ -55,12 +55,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement BarWidget.qml status indicator binding to GitService.status
-- [ ] T016 [US1] Add hover tooltip to BarWidget showing branch, file count, ahead/behind
-- [ ] T017 [US1] Implement file watcher in Main.qml using FileView for .git/HEAD and .git/index
-- [ ] T018 [US1] Add Timer-based polling fallback (configurable via SettingsService.refreshInterval)
-- [ ] T019 [US1] Connect BarWidget click to PanelService.toggle() to open panel
-- [ ] T020 [US1] Style StatusIndicator for clean/modified/ahead states with colorblind-safe shapes
+- [x] T015 [US1] Implement BarWidget.qml status indicator binding to GitService.status
+- [x] T016 [US1] Add hover tooltip to BarWidget showing branch, file count, ahead/behind
+- [x] T017 [US1] Implement file watcher in Main.qml using FileView for .git/HEAD and .git/index
+- [x] T018 [US1] Add Timer-based polling fallback (configurable via SettingsService.refreshInterval)
+- [x] T019 [US1] Connect BarWidget click to PanelService.toggle() to open panel
+- [x] T020 [US1] Style StatusIndicator for clean/modified/ahead states with colorblind-safe shapes
 
 **Checkpoint**: Bar widget shows live repo status, click opens panel
 
@@ -74,17 +74,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Create Components/CommitsView.qml with file list grouped by Staged/Unstaged/Untracked
-- [ ] T022 [US2] Implement file item delegate with stage [+] and unstage [-] buttons
-- [ ] T023 [US2] Implement GitService.stage(filePath) using `git add <path>`
-- [ ] T024 [US2] Implement GitService.unstage(filePath) using `git reset HEAD <path>`
-- [ ] T025 [US2] Implement GitService.stageAll() using `git add -A`
-- [ ] T026 [US2] Add commit message TextArea with character count in CommitsView
-- [ ] T027 [US2] Implement GitService.commit(message) using `git commit -m`
-- [ ] T028 [US2] Add Commit button with disabled state when no staged files
-- [ ] T029 [US2] Implement GitService.push() using `git push`
-- [ ] T030 [US2] Add Push button visible when ahead > 0
-- [ ] T031 [US2] Wire CommitsView into Panel.qml as default view
+- [x] T021 [US2] Create Components/CommitsView.qml with file list grouped by Staged/Unstaged/Untracked
+- [x] T022 [US2] Implement file item delegate with stage [+] and unstage [-] buttons
+- [x] T023 [US2] Implement GitService.stage(filePath) using `git add <path>`
+- [x] T024 [US2] Implement GitService.unstage(filePath) using `git reset HEAD <path>`
+- [x] T025 [US2] Implement GitService.stageAll() using `git add -A`
+- [x] T026 [US2] Add commit message TextArea with character count in CommitsView
+- [x] T027 [US2] Implement GitService.commit(message) using `git commit -m`
+- [x] T028 [US2] Add Commit button with disabled state when no staged files
+- [x] T029 [US2] Implement GitService.push() using `git push`
+- [x] T030 [US2] Add Push button visible when ahead > 0
+- [x] T031 [US2] Wire CommitsView into Panel.qml as default view
 
 **Checkpoint**: Full staging/commit/push workflow functional
 
@@ -98,14 +98,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Create Components/DiffViewer.qml with ListView for diff lines
-- [ ] T033 [US3] Implement GitService.getDiff(filePath) using `git diff` and `git diff --cached`
-- [ ] T034 [US3] Implement diff parser in JavaScript (parse unified diff format into hunks/lines)
-- [ ] T035 [US3] Style DiffViewer with add (green), remove (red), context colors
-- [ ] T036 [US3] Add expand/collapse toggle to file items in CommitsView
-- [ ] T037 [US3] Embed DiffViewer inline when file is expanded
-- [ ] T038 [US3] Handle large diffs (>500 lines) with truncation and "Show full diff" option
-- [ ] T039 [US3] Handle binary files with "Binary file" placeholder
+- [x] T032 [US3] Create Components/DiffViewer.qml with ListView for diff lines
+- [x] T033 [US3] Implement GitService.getDiff(filePath) using `git diff` and `git diff --cached`
+- [x] T034 [US3] Implement diff parser in JavaScript (parse unified diff format into hunks/lines)
+- [x] T035 [US3] Style DiffViewer with add (green), remove (red), context colors
+- [x] T036 [US3] Add expand/collapse toggle to file items in CommitsView
+- [x] T037 [US3] Embed DiffViewer inline when file is expanded
+- [x] T038 [US3] Handle large diffs (>500 lines) with truncation and "Show full diff" option
+- [x] T039 [US3] Handle binary files with "Binary file" placeholder
 
 **Checkpoint**: File diffs display inline with proper styling
 
@@ -119,16 +119,16 @@
 
 ### Implementation for User Story 4
 
-- [ ] T040 [US4] Create Services/GitHubService.qml singleton with auth state properties
-- [ ] T041 [US4] Implement startAuth() - POST to /login/device/code via curl Process
-- [ ] T042 [US4] Implement polling Timer for token retrieval at specified interval
-- [ ] T043 [US4] Implement token storage using secret-tool (libsecret) via Process
-- [ ] T044 [US4] Implement loadStoredToken() on startup to restore session
-- [ ] T045 [US4] Implement logout() to clear token from keyring
-- [ ] T046 [US4] Add auth UI to Panel.qml showing device code and instructions during flow
-- [ ] T047 [US4] Add GitHub icon button in Panel footer with auth state indicator
-- [ ] T048 [US4] Show "Connected as @username" with avatar when authenticated
-- [ ] T049 [US4] Handle auth errors (expired, denied, rate limited) with user-friendly messages
+- [x] T040 [US4] Create Services/GitHubService.qml singleton with auth state properties
+- [x] T041 [US4] Implement startAuth() - POST to /login/device/code via curl Process
+- [x] T042 [US4] Implement polling Timer for token retrieval at specified interval
+- [x] T043 [US4] Implement token storage using secret-tool (libsecret) via Process
+- [x] T044 [US4] Implement loadStoredToken() on startup to restore session
+- [x] T045 [US4] Implement logout() to clear token from keyring
+- [x] T046 [US4] Add auth UI to Panel.qml showing device code and instructions during flow
+- [x] T047 [US4] Add GitHub icon button in Panel footer with auth state indicator
+- [x] T048 [US4] Show "Connected as @username" with avatar when authenticated
+- [x] T049 [US4] Handle auth errors (expired, denied, rate limited) with user-friendly messages
 
 **Checkpoint**: GitHub OAuth Device Flow fully functional
 
@@ -144,22 +144,22 @@
 
 ### Implementation for User Story 5
 
-- [ ] T050 [US5] Create Components/IssuesView.qml with issue list and search/filter
-- [ ] T051 [US5] Implement GitHubService.listIssues(owner, repo) using GitHub REST API
-- [ ] T052 [US5] Implement issue list delegate with number, title, status indicator, labels
-- [ ] T053 [US5] Create Components/IssueEditor.qml for expanded issue view with markdown body
-- [ ] T054 [US5] Implement markdown rendering using TextEdit.MarkdownText for issue body
-- [ ] T055 [US5] Implement GitHubService.getIssue() to fetch issue with comments
-- [ ] T056 [US5] Display comment thread in IssueEditor with author avatars
-- [ ] T057 [US5] Implement GitHubService.addComment() for posting new comments
-- [ ] T058 [US5] Add comment input TextArea with markdown preview toggle
-- [ ] T059 [US5] Implement "New Issue" button opening create form in IssueEditor
-- [ ] T060 [US5] Implement GitHubService.createIssue() with title, body, labels
-- [ ] T061 [US5] Implement GitHubService.closeIssue() and reopenIssue()
-- [ ] T062 [US5] Add close/reopen buttons to expanded issue view
-- [ ] T063 [US5] Implement pagination for issue lists (load more on scroll)
-- [ ] T064 [US5] Wire IssuesView into Panel.qml view toggle
-- [ ] T065 [US5] Handle offline/unauthenticated state with appropriate messaging
+- [x] T050 [US5] Create Components/IssuesView.qml with issue list and search/filter
+- [x] T051 [US5] Implement GitHubService.listIssues(owner, repo) using GitHub REST API
+- [x] T052 [US5] Implement issue list delegate with number, title, status indicator, labels
+- [x] T053 [US5] Create Components/IssueEditor.qml for expanded issue view with markdown body
+- [x] T054 [US5] Implement markdown rendering using TextEdit.MarkdownText for issue body
+- [x] T055 [US5] Implement GitHubService.getIssue() to fetch issue with comments
+- [x] T056 [US5] Display comment thread in IssueEditor with author avatars
+- [x] T057 [US5] Implement GitHubService.addComment() for posting new comments
+- [x] T058 [US5] Add comment input TextArea with markdown preview toggle
+- [x] T059 [US5] Implement "New Issue" button opening create form in IssueEditor
+- [x] T060 [US5] Implement GitHubService.createIssue() with title, body, labels
+- [x] T061 [US5] Implement GitHubService.closeIssue() and reopenIssue()
+- [x] T062 [US5] Add close/reopen buttons to expanded issue view
+- [x] T063 [US5] Implement pagination for issue lists (load more on scroll)
+- [x] T064 [US5] Wire IssuesView into Panel.qml view toggle
+- [x] T065 [US5] Handle offline/unauthenticated state with appropriate messaging
 
 **Checkpoint**: Full issue management workflow functional
 
@@ -173,15 +173,15 @@
 
 ### Implementation for User Story 6
 
-- [ ] T066 [US6] Create Components/RepoSelector.qml dropdown component
-- [ ] T067 [US6] Implement recent repos list from SettingsService.recentRepos
-- [ ] T068 [US6] Add repo selection handler that calls GitService.setRepository()
-- [ ] T069 [US6] Implement path input for adding new repos to recent list
-- [ ] T070 [US6] Validate repo path (must contain .git/) before adding
-- [ ] T071 [US6] Implement SettingsService.addRecentRepo() with deduplication and limit
-- [ ] T072 [US6] Wire RepoSelector into Panel.qml header
-- [ ] T073 [US6] Update GitHubService to parse owner/repo from git remote URL
-- [ ] T074 [US6] Auto-detect current working directory on plugin load
+- [x] T066 [US6] Create Components/RepoSelector.qml dropdown component
+- [x] T067 [US6] Implement recent repos list from SettingsService.recentRepos
+- [x] T068 [US6] Add repo selection handler that calls GitService.setRepository()
+- [x] T069 [US6] Implement path input for adding new repos to recent list
+- [x] T070 [US6] Validate repo path (must contain .git/) before adding
+- [x] T071 [US6] Implement SettingsService.addRecentRepo() with deduplication and limit
+- [x] T072 [US6] Wire RepoSelector into Panel.qml header
+- [x] T073 [US6] Update GitHubService to parse owner/repo from git remote URL
+- [x] T074 [US6] Auto-detect current working directory on plugin load
 
 **Checkpoint**: Multi-repo switching functional
 
@@ -195,16 +195,16 @@
 
 ### Implementation for User Story 7
 
-- [ ] T075 [US7] Create Settings.qml panel component with preferences UI
-- [ ] T076 [US7] Add colorblind mode toggle binding to SettingsService.colorblindMode
-- [ ] T077 [US7] Add palette selector dropdown (Shapes+Labels, High Contrast, Deuteranopia, Protanopia)
-- [ ] T078 [US7] Update StatusIndicator to show text labels when colorblindMode enabled
-- [ ] T079 [US7] Define color palettes for each accessibility option in StatusIndicator
-- [ ] T080 [US7] Apply colorblind palette to DiffViewer add/remove colors
-- [ ] T081 [US7] Apply colorblind palette to issue status indicators
-- [ ] T082 [US7] Add settings gear icon to Panel footer opening Settings.qml
-- [ ] T083 [US7] Add refreshInterval setting control in Settings.qml
-- [ ] T084 [US7] Add defaultView setting control in Settings.qml
+- [x] T075 [US7] Create Settings.qml panel component with preferences UI
+- [x] T076 [US7] Add colorblind mode toggle binding to SettingsService.colorblindMode
+- [x] T077 [US7] Add palette selector dropdown (Shapes+Labels, High Contrast, Deuteranopia, Protanopia)
+- [x] T078 [US7] Update StatusIndicator to show text labels when colorblindMode enabled
+- [x] T079 [US7] Define color palettes for each accessibility option in StatusIndicator
+- [x] T080 [US7] Apply colorblind palette to DiffViewer add/remove colors
+- [x] T081 [US7] Apply colorblind palette to issue status indicators
+- [x] T082 [US7] Add settings gear icon to Panel footer opening Settings.qml
+- [x] T083 [US7] Add refreshInterval setting control in Settings.qml
+- [x] T084 [US7] Add defaultView setting control in Settings.qml
 
 **Checkpoint**: Accessibility settings fully functional
 
@@ -214,18 +214,18 @@
 
 **Purpose**: Edge cases, error handling, and final polish
 
-- [ ] T085 Handle "no git repository" state in BarWidget and Panel with guidance message
-- [ ] T086 Handle merge conflicts - show warning icon, display conflict markers in diff
-- [ ] T087 Handle large files (>1MB) - show "File too large" with external editor option
-- [ ] T088 Handle offline mode - cache GitHub data, show "Offline" badge
-- [ ] T089 Handle GitHub rate limiting - show cached data with "Rate limited" message
-- [ ] T090 Handle empty repository (no commits) with first commit guidance
-- [ ] T091 Handle expired auth token - pulse auth icon, prompt re-authentication
-- [ ] T092 Add keyboard shortcut support (document in quickstart.md)
-- [ ] T093 Performance optimization - virtualize file/issue lists for 100+ items
-- [ ] T094 [P] Update i18n/en.json with all final UI strings
+- [x] T085 Handle "no git repository" state in BarWidget and Panel with guidance message
+- [x] T086 Handle merge conflicts - show warning icon, display conflict markers in diff
+- [x] T087 Handle large files (>1MB) - show "File too large" with external editor option
+- [x] T088 Handle offline mode - cache GitHub data, show "Offline" badge
+- [x] T089 Handle GitHub rate limiting - show cached data with "Rate limited" message
+- [x] T090 Handle empty repository (no commits) with first commit guidance
+- [x] T091 Handle expired auth token - pulse auth icon, prompt re-authentication
+- [x] T092 Add keyboard shortcut support (document in quickstart.md)
+- [x] T093 Performance optimization - virtualize file/issue lists for 100+ items
+- [x] T094 [P] Update i18n/en.json with all final UI strings
 - [ ] T095 [P] Create preview.png screenshot for plugin registry
-- [ ] T096 Run quickstart.md validation - verify all steps work
+- [x] T096 Run quickstart.md validation - verify all steps work
 
 ---
 
