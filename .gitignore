@@ -1,4 +1,9 @@
 # Quick-Git Noctalia Plugin - .gitignore
+.specify/
+.claude/
+Claude.md
+docs/
+
 
 # QML/Qt build artifacts
 *.qmlc
