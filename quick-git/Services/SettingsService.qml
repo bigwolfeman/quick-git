@@ -139,12 +139,7 @@ Singleton {
     FileView {
         id: settingsWriter
         path: root._settingsPath
-
-        onErrorChanged: {
-            if (error) {
-                console.error("[SettingsService] Failed to save settings:", error)
-            }
-        }
+        // Note: FileView doesn't have an error property, errors handled in _performSave
     }
 
     /**
