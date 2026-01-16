@@ -6,9 +6,9 @@
   "description": "Git management panel with GitHub integration. View repository status at a glance, stage and commit changes, review diffs, and manage GitHub issues - all from a slide-down panel without leaving your workflow.",
   "author": "Quick-Git Contributors",
   "license": "MIT",
-  "repository": "https://github.com/quick-git/quick-git",
-  "homepage": "https://github.com/quick-git/quick-git#readme",
-  "bugs": "https://github.com/quick-git/quick-git/issues",
+  "repository": "https://github.com/bigwolfeman/quick-git",
+  "homepage": "https://github.com/bigwolfeman/quick-git#readme",
+  "bugs": "https://github.com/bigwolfeman/quick-git/issues",
   "minNoctaliaVersion": "3.0.0",
   "category": "Development",
   "tags": [
