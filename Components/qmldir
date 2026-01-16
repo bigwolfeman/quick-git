@@ -1,0 +1,7 @@
+module Components
+CommitsView 1.0 CommitsView.qml
+DiffViewer 1.0 DiffViewer.qml
+IssueEditor 1.0 IssueEditor.qml
+IssuesView 1.0 IssuesView.qml
+RepoSelector 1.0 RepoSelector.qml
+StatusIndicator 1.0 StatusIndicator.qml

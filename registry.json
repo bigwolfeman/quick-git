@@ -1,0 +1,20 @@
+{
+  "$schema": "https://noctalia.dev/schemas/plugin-registry.json",
+  "version": 1,
+  "lastUpdated": "2026-01-15T00:00:00Z",
+  "plugins": [
+    {
+      "id": "quick-git",
+      "name": "Quick Git",
+      "version": "1.0.0",
+      "description": "Git management panel with GitHub integration. View repository status at a glance, stage and commit changes, review diffs, and manage GitHub issues - all from a slide-down panel without leaving your workflow.",
+      "author": "Quick-Git Contributors",
+      "license": "MIT",
+      "category": "Development",
+      "tags": ["git", "github", "version-control", "development", "vcs", "repository", "issues", "commits", "diff", "accessibility"],
+      "minNoctaliaVersion": "3.0.0",
+      "path": ".",
+      "manifest": "manifest.json"
+    }
+  ]
+}
