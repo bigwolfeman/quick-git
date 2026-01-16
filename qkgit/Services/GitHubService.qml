@@ -834,13 +834,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 deviceCodeProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 deviceCodeProcess.stderrText = text
             }
         }
@@ -938,13 +938,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 tokenPollProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 tokenPollProcess.stderrText = text
             }
         }
@@ -1042,13 +1042,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 userValidateProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 userValidateProcess.stderrText = text
             }
         }
@@ -1114,13 +1114,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 tokenLoadProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 tokenLoadProcess.stderrText = text
             }
         }
@@ -1159,7 +1159,7 @@ Singleton {
         ]
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 tokenStoreProcess.stderrText = text
             }
         }
@@ -1194,7 +1194,7 @@ Singleton {
         ]
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 tokenClearProcess.stderrText = text
             }
         }
@@ -1242,13 +1242,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 listIssuesProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 listIssuesProcess.stderrText = text
             }
         }
@@ -1309,13 +1309,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 getIssueProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 getIssueProcess.stderrText = text
             }
         }
@@ -1387,13 +1387,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 getCommentsProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 getCommentsProcess.stderrText = text
             }
         }
@@ -1467,13 +1467,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 createIssueProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 createIssueProcess.stderrText = text
             }
         }
@@ -1532,13 +1532,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 updateIssueProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 updateIssueProcess.stderrText = text
             }
         }
@@ -1598,13 +1598,13 @@ Singleton {
         ]
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 addCommentProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 addCommentProcess.stderrText = text
             }
         }

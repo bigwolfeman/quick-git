@@ -503,7 +503,7 @@ Singleton {
         property string stderrText: ""
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 repoValidateProcess.stderrText = text
             }
         }
@@ -538,7 +538,7 @@ Singleton {
         property string stderrText: ""
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 const newBranch = text.trim()
 
                 // Handle detached HEAD state
@@ -561,7 +561,7 @@ Singleton {
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 branchProcess.stderrText = text
             }
         }
@@ -600,7 +600,7 @@ Singleton {
         running: false
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 const shortSha = text.trim()
                 const newBranch = "(" + shortSha + ")"
 
@@ -636,7 +636,7 @@ Singleton {
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 statusProcess.stderrText = text
             }
         }
@@ -665,7 +665,7 @@ Singleton {
         property string stderrText: ""
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 const trimmed = text.trim()
                 if (!trimmed) return
 
@@ -692,7 +692,7 @@ Singleton {
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 aheadBehindProcess.stderrText = text
             }
         }
@@ -731,7 +731,7 @@ Singleton {
         property string stderrText: ""
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 stageProcess.stderrText = text
             }
         }
@@ -758,7 +758,7 @@ Singleton {
         property string stderrText: ""
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 unstageProcess.stderrText = text
             }
         }
@@ -785,7 +785,7 @@ Singleton {
         property string stderrText: ""
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 stageAllProcess.stderrText = text
             }
         }
@@ -813,13 +813,13 @@ Singleton {
         property string stderrText: ""
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 commitProcess.stdoutText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 commitProcess.stderrText = text
             }
         }
@@ -853,7 +853,7 @@ Singleton {
         property string stderrText: ""
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 pushProcess.stderrText = text
             }
         }
@@ -890,13 +890,13 @@ Singleton {
         property string stderrText: ""
 
         stdout: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 diffProcess.diffText = text
             }
         }
 
         stderr: StdioCollector {
-            onCollected: text => {
+            onStreamFinished: text => {
                 diffProcess.stderrText = text
             }
         }
