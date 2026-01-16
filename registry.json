@@ -2,7 +2,7 @@
   "version": 1,
   "plugins": [
     {
-      "id": "quick-git",
+      "id": "qkgit",
       "name": "Quick Git",
       "version": "1.0.0",
       "author": "Quick-Git Contributors",

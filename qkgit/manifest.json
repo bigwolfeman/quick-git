@@ -1,6 +1,6 @@
 {
   "$schema": "https://noctalia.dev/schemas/plugin-manifest.json",
-  "id": "quick-git",
+  "id": "qkgit",
   "name": "Quick Git",
   "version": "1.0.0",
   "description": "Git management panel with GitHub integration. View repository status at a glance, stage and commit changes, review diffs, and manage GitHub issues - all from a slide-down panel without leaving your workflow.",
