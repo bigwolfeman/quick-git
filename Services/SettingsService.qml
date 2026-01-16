@@ -91,16 +91,8 @@ Singleton {
      */
     signal saved()
 
-    /**
-     * Emitted when colorblind mode is toggled
-     * @param enabled - New state of colorblind mode
-     */
-    signal colorblindModeChanged(bool enabled)
-
-    /**
-     * Emitted when recent repos list changes
-     */
-    signal recentReposChanged()
+    // Note: colorblindModeChanged and recentReposChanged signals are auto-generated
+    // by their respective properties (colorblindMode, recentRepos)
 
     // =========================================================================
     // INTERNAL STATE
