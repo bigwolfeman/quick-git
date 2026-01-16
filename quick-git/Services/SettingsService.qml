@@ -121,12 +121,9 @@ Singleton {
         onTextChanged: {
             if (root._loading && text && text.length > 0) {
                 root._parseAndApplySettings(text)
-            }
-        }
-
-        onErrorChanged: {
-            if (root._loading && error) {
-                console.log("[SettingsService] Settings file not found or error:", error)
+            } else if (root._loading && (!text || text.length === 0)) {
+                // File doesn't exist or is empty - create defaults
+                console.log("[SettingsService] Settings file not found or empty")
                 console.log("[SettingsService] Creating default settings")
                 root._loading = false
                 root.isLoaded = true

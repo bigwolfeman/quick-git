@@ -604,16 +604,8 @@ Item {
         }
     }
 
-    // =========================================================================
-    // TRANSITIONS (smooth color changes)
-    // =========================================================================
-
-    Behavior on statusColor {
-        ColorAnimation {
-            duration: 200
-            easing.type: Easing.InOutQuad
-        }
-    }
+    // Note: statusColor is readonly (computed), so Behavior animations aren't possible
+    // Color changes happen instantly when status changes
 
     // =========================================================================
     // COMPONENT LIFECYCLE
