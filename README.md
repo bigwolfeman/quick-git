@@ -1,3 +1,4 @@
+🛑 This project is under development 🛑
 # Quick Git
 
 Git management panel with GitHub integration for Noctalia. View repository status at a glance, stage and commit changes, review diffs, and manage GitHub issues - all from a slide-down panel without leaving your workflow.
